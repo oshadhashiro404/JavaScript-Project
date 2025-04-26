@@ -36,7 +36,7 @@ function init() {
 }
 
 function getTransactionsFromStorage() {
-	let transactions = localStorage.getItem('transaction');
+	let transactions = localStorage.getItem('transactions'); // Changed from 'transaction'
 	return transactions ? JSON.parse(transactions) : [];
 }
 
@@ -187,20 +187,11 @@ function addTransactionDOM(transaction, transactionListEl) {
 function createChart(chartContainer) {
 	chartContainer.innerHTML = '';
 
-	if ((transactions.length = 0)) {
+	if (transactions.length === 0) {
+		// Changed from = to ===
 		chartContainer.textContent = 'No data to display';
 		return;
 	}
-
-	// Create category summary focusing on expenses
-	const categorySummary = {};
-
-	// Initialize categories for expenses
-	transactions.forEach((transaction) => {
-		if (transaction.amount < 0 && !categorySummary[transaction.category]) {
-			categorySummary[transaction.category] = 0;
-		}
-	});
 
 	// Sum expenses by category (only negative amounts)
 	transactions.forEach((transaction) => {
@@ -301,29 +292,25 @@ function generateReport() {
 		.reduce((acc, t) => acc + t.amount, 0);
 
 	const totalExpense = transactions
-		.filter((t) => t.amount > 0)
+		.filter((t) => t.amount < 0) // Changed from > to <
 		.reduce((acc, t) => acc + t.amount, 0);
 
-	const balance = totalIncome - totalExpense;
+	const balance = totalIncome + totalExpense; // Note: totalExpense is already negative
 
 	reportText += `Total Income: Rs ${totalIncome.toFixed(2)}\n`;
 	reportText += `Total Expense: Rs ${Math.abs(totalExpense).toFixed(2)}\n`;
 	reportText += `Balance: Rs ${balance.toFixed(2)}\n\n`;
 
-	// Category breakdown
-	reportText += 'Expense Breakdown by Category:\n';
-
+	// Fixed category summary initialization
 	const categorySummary = {};
-
 	transactions.forEach((t) => {
 		if (t.amount < 0) {
+			if (!categorySummary[t.category]) {
+				categorySummary[t.category] = 0;
+			}
 			categorySummary[t.category] += Math.abs(t.amount);
 		}
 	});
-
-	for (const category in categorySummary) {
-		reportText += `${category}: Rs ${categorySummary[category].toFixed(2)}\n`;
-	}
 
 	alert(reportText);
 }
